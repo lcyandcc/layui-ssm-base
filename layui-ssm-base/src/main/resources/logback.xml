@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--输出日志到控制台-->
+    <appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <!--负责把事件转成字符串，格式化日志信息的输出-->
+        <layout>
+            <pattern>
+                <!--%d是日期，%msg是日志消息%n换行-->
+                [%p]%d-%msg%n
+            </pattern>
+        </layout>
+    </appender>
+    <appender name="fileLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>debug</level>
+            <onMatch>DENY</onMatch>
+        </filter>
+        <encoder>
+            <pattern>
+                [%p]%d-%msg%n
+            </pattern>
+        </encoder>
+        <!-- 指定文件的输出位置-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>
+                D:/logs2021/%d.log
+            </fileNamePattern>
+        </rollingPolicy>
+    </appender>
+    <!-- 滚动文件的方式生成日志日志文件，文件的存储位置通过file标签指定 -->
+    <!-- 通过encoder指定日志的生成格式,每个appender的日志格式都可以自定义，不用相同 -->
+    <appender name="MyBatis" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>D:/logs2021/logs/mybatis-sql.log</file>
+        <!--
+                通过rollingPolicy设置日志滚动的策略，这是使用按照时间滚动
+                fileNamePattern属性设置滚动生成文件的格式,这里设置的精确到天，也就是按照天滚动，如果时间设置精确到秒，就按秒来滚动
+                maxHistory属性设定最大的文件数，比如按天滚动，这里设置了30天，在第31天日志生成的时候，第一天的日志就会被删掉
+            -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>E:/logs2021/logs/mybatis-sql.log.%d{yyyy-MM-dd}</FileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%thread|%d{yyyy-MM-dd HH:mm:ss.SSS}|%level|%logger{36}|%m%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="mybatis.sql" level="DEBUG">
+        <appender-ref ref="MyBatis"/>
+    </logger>
+    <root level="info">
+        <appender-ref ref="consoleLog"></appender-ref>
+        <appender-ref ref="fileLog"></appender-ref>
+    </root>
+</configuration>

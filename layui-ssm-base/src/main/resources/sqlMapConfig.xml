@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!--sqlMapConfig.xml: 叫做Mybatis的核心配置文件-->
+<configuration>
+
+    <settings>
+        <!-- 配置打印 SQL log 的路径前缀 -->
+        <setting name="logPrefix" value="mybatis.sql."/>
+        <!--设置自动映射配置-->
+        <setting name="autoMappingBehavior" value="FULL"/>
+        <!-- 打开懒加载（延迟加载） -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!-- 将积极加载改为消极加载（即为按需加载） -->
+        <setting name="aggressiveLazyLoading" value="false"/>
+    </settings>
+
+
+    <!--配置pageHelper的拦截器-->
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageHelper">
+            <!--配置方言：mysql-->
+            <property name="dialect" value="mysql"/>
+            <!-- 3.3.0版本可用 - 分页参数合理化，默认false禁用 -->
+            <!-- 启用合理化时，如果pageNum<1会查询第一页，如果pageNum>pages会查询最后一页 -->
+            <!-- 禁用合理化时，如果pageNum<1或pageNum>pages会返回空数据 -->
+            <property name="reasonable" value="true"/>
+        </plugin>
+    </plugins>
+
+
+</configuration>

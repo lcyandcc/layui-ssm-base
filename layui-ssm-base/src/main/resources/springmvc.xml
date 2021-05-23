@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+			http://www.springframework.org/schema/mvc
+			http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+			http://www.springframework.org/schema/context
+			http://www.springframework.org/schema/context/spring-context-4.2.xsd ">
+
+    <!--springmvc开启包扫描，只扫描controller-->
+    <context:component-scan base-package="cn.kgc.controller"/>
+
+    <mvc:annotation-driven conversion-service="myConversionService">
+        <mvc:message-converters>
+            <!--装配消息转换器-->
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+            <!--装配日期格式转换器-->
+            <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json</value>
+                    </list>
+                </property>
+                <property name="features">
+                    <list>
+                        <!-- Date的日期转换器 -->
+                        <value>WriteDateUseDateFormat</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!--不拦截静态资源-->
+    <mvc:resources mapping="/statics/**" location="/statics/"></mvc:resources>
+
+    <!--配置视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    <!--装配定义好的转换器-->
+    <bean id="myConversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <list>
+                <bean class="cn.kgc.config.StringToDateConverter">
+                    <constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+    <!-- 配置MultipartResolver，用于上传文件，使用spring的CommonsMultipartResolver -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!--最大上传文件大小限制：10Mb  默认单位：b  1024*1024*10 -->
+        <property name="maxUploadSize" value="10485760"/>
+        <!--默认字符编码-->
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+</beans>

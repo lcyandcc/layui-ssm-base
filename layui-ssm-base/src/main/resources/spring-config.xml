@@ -1,0 +1,93 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--1.配置通配符的扫描器
+         base-package="cn.kgc.demo.*"  "*"为通配符，匹配所有
+         扫描cn.kgc.demo此包下面的类或者子包及其子包的类
+    -->
+    <context:component-scan base-package="cn.kgc.*">
+        <!--不扫描Controller注解，让springmvc自己去扫描-->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--2.配置读取数据库四大件的db.properties-->
+    <!--
+        classpath:表示文件的路径，表示文件在根路径时使用
+        classpath* ： 表示文件的路径有子路径。
+    -->
+    <bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:db.properties"></property>
+    </bean>
+
+    <!--配置数据源-->
+    <bean id="druidDataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <!--注入驱动-->
+        <property name="driverClassName" value="${driver}"></property>
+        <!--url-->
+        <property name="url" value="${url}"></property>
+        <!--用户名-->
+        <property name="username" value="${username}"></property>
+        <!--密码-->
+        <property name="password" value="${password}"></property>
+
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="1" />
+        <property name="minIdle" value="1" />
+        <property name="maxActive" value="20" />
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="60000" />
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000" />
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+    </bean>
+
+    <!--4.配置SqlSessionFactory的创建且为单例模式，我们使用spring框架去管理-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--注入数据源-->
+        <property name="dataSource" ref="druidDataSource"/>
+        <!--注入mybatis的文件-->
+        <property name="configLocation" value="classpath:sqlMapConfig.xml"/>
+        <!--注入mybatis的别名配置-->
+        <property name="typeAliasesPackage" value="cn.kgc.pojo"/>
+        <!--配置扫描到resources/mapper下面的所有mapper.xml文件-->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+    </bean>
+
+    <!--5.配置得到Mapper动态代理对象（用匿名bean）
+          通过此工具类将Mapper动态代理对象实例化并放入到IOC容器中进行管理
+    -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--依赖引入sqlSessionFactory对象-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!--配置扫描到mapper接口包下面所有的Mapper文件-->
+        <property name="basePackage" value="cn.kgc.dao"/>
+    </bean>
+
+    <!--配置事务管理器-->
+    <bean id="tx" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!--注入数据源-->
+        <property name="dataSource" ref="druidDataSource"/>
+    </bean>
+
+    <!--注解版的事务管理 - 删掉 传播行为 / 切入点-->
+    <!--开启声明式事务的注解驱动-->
+    <!--
+    proxy-target-class="true": 使用spring的动态代理配置
+    transaction-manager="tx ：引入配置管理器
+    -->
+    <tx:annotation-driven proxy-target-class="true" transaction-manager="tx"/>
+
+</beans>
